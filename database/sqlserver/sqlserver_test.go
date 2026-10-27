@@ -27,12 +27,11 @@ var (
 	sqlServerOpts = dktest.Options{
 		Env:          map[string]string{"ACCEPT_EULA": "Y", "MSSQL_SA_PASSWORD": saPassword, "MSSQL_PID": "Express"},
 		PortRequired: true, ReadyFunc: isReady, PullTimeout: 2 * time.Minute,
-		// The 2025 image can need more than the 1 minute dktest default to start on a busy CI runner.
-		Timeout: 3 * time.Minute,
 	}
 	// Container versions: https://mcr.microsoft.com/v2/mssql/server/tags/list
 	specs = []dktesting.ContainerSpec{
-		{ImageName: "mcr.microsoft.com/mssql/server:2025-latest", Options: sqlServerOpts},
+		// The 2025 container sometimes stops while it starts in CI: https://github.com/golang-migrate/migrate/issues/1459
+		{ImageName: "mcr.microsoft.com/mssql/server:2025-latest", Options: sqlServerOpts, RetryNotReady: true},
 		{ImageName: "mcr.microsoft.com/mssql/server:2022-latest", Options: sqlServerOpts},
 		{ImageName: "mcr.microsoft.com/mssql/server:2019-latest", Options: sqlServerOpts},
 		// Add back support for 2017 version once the image is fixed: https://github.com/microsoft/mssql-docker/issues/899
